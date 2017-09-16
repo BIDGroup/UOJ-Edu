@@ -1,6 +1,6 @@
 <?php
     requirePHPLib('form');
-    
+
     if (!validateUInt($_GET['id']) || !($contest = queryContest($_GET['id']))) {
         become404Page();
     }
@@ -13,7 +13,7 @@
         } elseif ($contest['cur_progress'] == CONTEST_IN_PROGRESS) {
             if ($myUser == null || !hasRegistered($myUser, $contest)) {
                 becomeMsgPage("<h1>比赛正在进行中</h1><p>正在跳转至注册页面</p>");
-                redirectTo('/contest/{$contest['id']}/register');
+                redirectTo("/contest/{$contest['id']}/register");
             }
         }
     }
@@ -30,7 +30,7 @@
         }
         die(json_encode(array('time' => UOJTime::$time_now_str)));
     }
-    
+
     if (isset($_GET['tab'])) {
         $cur_tab = $_GET['tab'];
     } else {
@@ -49,7 +49,7 @@
         while ($row = mysql_fetch_array($result, MYSQL_NUM)) {
             $prob_pos[$problems[] = (int)$row[0]] = $n_problems++;
         }
-        
+
         $data = array();
         if ($contest['cur_progress'] < CONTEST_FINISHED) {
             $result = mysql_query("select id, submit_time, submitter, problem_id, score from submissions where contest_id = {$contest['id']} and score is not null order by id");
@@ -62,7 +62,7 @@
             $row[4] = (int)$row[4];
             $data[] = $row;
         }
-        
+
         $people = array();
         $result = mysql_query("select username, user_rating from contests_registrants where contest_id = {$contest['id']} and has_participated = 1");
         while ($row = mysql_fetch_array($result, MYSQL_NUM)) {
@@ -75,7 +75,7 @@
 
     function calcStandings($contest_data, &$score, &$standings, $update_contests_submissions = false) {
         global $contest;
-        
+
         // score: username, problem_pos => score, penalty, id
         $score = array();
         $n_people = count($contest_data['people']);
@@ -83,7 +83,7 @@
         foreach ($contest_data['people'] as $person) {
             $score[$person[0]] = array();
         }
-        foreach ($contest_data['data'] as $submission) {        
+        foreach ($contest_data['data'] as $submission) {
             $penalty = (new DateTime($submission[1]))->getTimestamp() - $contest['start_time']->getTimestamp();
             if ($contest['extra_config']['standings_version'] >= 2) {
                 if ($submission[4] == 0) {
@@ -132,7 +132,7 @@
             }
         }
     }
-    
+
     if (isSuperUser($myUser)) {
         if (CONTEST_PENDING_FINAL_TEST <= $contest['cur_progress'] && $contest['cur_progress'] <= CONTEST_TESTING) {
             $start_test_form = new UOJForm('start_test');
@@ -211,14 +211,14 @@ EOD;
             $publish_result_form->submit_button_config['class_str'] = 'btn btn-danger btn-block';
             $publish_result_form->submit_button_config['smart_confirm'] = '';
             $publish_result_form->submit_button_config['text'] = '公布成绩';
-            
+
             $publish_result_form->runAtServer();
         }
     }
-    
+
     function echoDashboard() {
         global $myUser, $contest, $post_notice;
-        
+
         echo '<div class="table-responsive">';
         echo '<table class="table table-bordered table-hover table-striped table-text-center">';
         echo '<thead>';
@@ -242,7 +242,7 @@ EOD;
         echo '</tbody>';
         echo '</table>';
         echo '</div>';
-        
+
         echo '<h3>', UOJLocale::get('contests::contest notice'), '</h3>';
         $header = '';
         $header .= '<tr>';
@@ -263,7 +263,7 @@ EOD;
                 'echo_full' => true
             )
         );
-        
+
         if (isSuperUser(Auth::user())) {
             echo '<div class="text-center">';
             echo '<button id="button-display-post-notice" type="button" class="btn btn-danger btn-xs">发布比赛公告</button>';
@@ -282,7 +282,7 @@ $(document).ready(function() {
 EOD;
         }
     }
-    
+
     function echoMySubmissions() {
         global $contest, $myUser;
 
@@ -309,10 +309,10 @@ EOD;
             echoSubmissionsList("submitter = '{$myUser['username']}' and contest_id = {$contest['id']}", 'order by id desc', array('judge_time_hidden' => ''), $myUser);
         }
     }
-    
+
     function echoStandings() {
         global $contest;
-        
+
         $contest_data = queryContestData();
         calcStandings($contest_data, $score, $standings);
 
@@ -335,7 +335,7 @@ EOD;
         echo '$(document).ready(showStandings());';
         echo '</script>';
     }
-    
+
     function echoContestCountdown() {
         global $contest;
          $rest_second = $contest['end_time']->getTimestamp() - UOJTime::$time_now->getTimestamp();
@@ -353,7 +353,7 @@ EOD;
         </script>
 EOD;
     }
-    
+
     function echoContestJudgeProgress() {
         global $contest;
         if ($contest['cur_progress'] < CONTEST_TESTING) {
@@ -378,7 +378,7 @@ EOD;
          </div>
 EOD;
     }
-    
+
     function echoContestFinished() {
         $title = UOJLocale::get('contests::contest ended');
         echo <<<EOD
@@ -389,7 +389,7 @@ EOD;
          </div>
 EOD;
     }
-    
+
     $post_notice = new UOJForm('post_notice');
     $post_notice->addInput('title', 'text', '标题', '',
         function($title) {
@@ -400,7 +400,7 @@ EOD;
         },
         null
     );
-    $post_notice->addTextArea('content', '正文', '', 
+    $post_notice->addTextArea('content', '正文', '',
         function($content) {
             if (!$content) {
                 return '公告不能为空';
@@ -416,7 +416,7 @@ EOD;
         mysql_query("insert into contests_notice (contest_id, title, content, time) values ('{$contest['id']}', '$title', '$content', now())");
     };
     $post_notice->runAtServer();
-    
+
     $tabs_info = array(
         'dashboard' => array(
             'name' => UOJLocale::get('contests::contest dashboard'),
@@ -431,11 +431,11 @@ EOD;
             'url' => "/contest/{$contest['id']}/standings"
         )
     );
-    
+
     if (!isset($tabs_info[$cur_tab])) {
         become404Page();
     }
-    
+
     $page_header = HTML::stripTags($contest['name']) . ' - ';
 ?>
 <?php echoUOJPageHeader(HTML::stripTags($contest['name']) . ' - ' . $tabs_info[$cur_tab]['name'] . ' - ' . UOJLocale::get('contests::contest')) ?>
@@ -462,7 +462,7 @@ EOD;
         ?>
         </div>
     </div>
-    
+
     <?php if ($cur_tab == 'standings'): ?>
     <div class="col-sm-12">
         <hr />
@@ -485,7 +485,7 @@ EOD;
     <?php endif ?>
         <p>此次比赛为OI赛制。</p>
         <p><strong>注意：比赛时只显示测样例的结果。</strong></p>
-    
+
         <a href="/contest/<?=$contest['id']?>/registrants" class="btn btn-info btn-block"><?= UOJLocale::get('contests::contest registrants') ?></a>
         <?php if (isSuperUser($myUser)): ?>
         <a href="/contest/<?=$contest['id']?>/manage" class="btn btn-primary btn-block">管理</a>
@@ -500,7 +500,7 @@ EOD;
         </div>
         <?php endif ?>
         <?php endif ?>
-    
+
         <?php if ($contest['extra_config']['links']) { ?>
             <?php if ($cur_tab == 'standings'): ?>
     </div>
