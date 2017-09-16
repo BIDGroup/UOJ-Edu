@@ -7,14 +7,9 @@
     genMoreContestInfo($contest);
 
     if (!hasContestPermission($myUser, $contest)) {
-        if ($contest['cur_progress'] == CONTEST_NOT_STARTED) {
+        if ($contest['cur_progress'] == CONTEST_NOT_STARTED || $contest['cur_progress'] == CONTEST_IN_PROGRESS) {
             header("Location: /contest/{$contest['id']}/register");
             die();
-        } elseif ($contest['cur_progress'] == CONTEST_IN_PROGRESS) {
-            if ($myUser == null || !hasRegistered($myUser, $contest)) {
-                becomeMsgPage("<h1>比赛正在进行中</h1><p>正在跳转至注册页面</p>");
-                redirectTo("/contest/{$contest['id']}/register");
-            }
         }
     }
 
