@@ -7,7 +7,7 @@
     genMoreContestInfo($contest);
 
     if (!hasContestPermission($myUser, $contest)) {
-        if ($contest['cur_progress'] == CONTEST_NOT_STARTED || $contest['cur_progress'] == CONTEST_IN_PROGRESS) {
+        if ($contest['cur_progress'] == CONTEST_NOT_STARTED || ($contest['cur_progress'] == CONTEST_IN_PROGRESS&&(!hasRegistered($myUser, $contest)))) {
             header("Location: /contest/{$contest['id']}/register");
             die();
         }
