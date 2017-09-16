@@ -1053,13 +1053,13 @@ marked.defaults = {
   silent: false,
   highlight: null,
   getLangClass: function(lang) {
-		lang = lang.toLowerCase();
-		switch (lang) {
-			case 'c': return 'sh_c';
-			case 'c++': return 'sh_cpp';
-			case 'pascal': return 'sh_pascal';
-			default: return 'sh_' + lang;
-		}
+        lang = lang.toLowerCase();
+        switch (lang) {
+            case 'c': return 'sh_c';
+            case 'c++': return 'sh_cpp';
+            case 'pascal': return 'sh_pascal';
+            default: return 'sh_' + lang;
+        }
   },
   getElementClass: null
 };

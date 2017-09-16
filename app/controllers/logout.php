@@ -1,6 +1,6 @@
 <?php
-	crsf_defend();
-	Auth::logout();
+    crsf_defend();
+    Auth::logout();
 ?>
 
 <script type="text/javascript">

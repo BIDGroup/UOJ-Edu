@@ -10,44 +10,44 @@ var staticDir = express.static;
 io            = io.listen(app);
 
 var opts = {
-	port :      1947,
-	baseDir :   __dirname + '/../../'
+    port :      1947,
+    baseDir :   __dirname + '/../../'
 };
 
 io.sockets.on( 'connection', function( socket ) {
 
-	socket.on( 'connect', function( data ) {
-		socket.broadcast.emit( 'connect', data );
-	});
+    socket.on( 'connect', function( data ) {
+        socket.broadcast.emit( 'connect', data );
+    });
 
-	socket.on( 'statechanged', function( data ) {
-		socket.broadcast.emit( 'statechanged', data );
-	});
+    socket.on( 'statechanged', function( data ) {
+        socket.broadcast.emit( 'statechanged', data );
+    });
 
 });
 
 app.configure( function() {
 
-	[ 'css', 'js', 'images', 'plugin', 'lib' ].forEach( function( dir ) {
-		app.use( '/' + dir, staticDir( opts.baseDir + dir ) );
-	});
+    [ 'css', 'js', 'images', 'plugin', 'lib' ].forEach( function( dir ) {
+        app.use( '/' + dir, staticDir( opts.baseDir + dir ) );
+    });
 
 });
 
 app.get('/', function( req, res ) {
 
-	res.writeHead( 200, { 'Content-Type': 'text/html' } );
-	fs.createReadStream( opts.baseDir + '/index.html' ).pipe( res );
+    res.writeHead( 200, { 'Content-Type': 'text/html' } );
+    fs.createReadStream( opts.baseDir + '/index.html' ).pipe( res );
 
 });
 
 app.get( '/notes/:socketId', function( req, res ) {
 
-	fs.readFile( opts.baseDir + 'plugin/notes-server/notes.html', function( err, data ) {
-		res.send( Mustache.to_html( data.toString(), {
-			socketId : req.params.socketId
-		}));
-	});
+    fs.readFile( opts.baseDir + 'plugin/notes-server/notes.html', function( err, data ) {
+        res.send( Mustache.to_html( data.toString(), {
+            socketId : req.params.socketId
+        }));
+    });
 
 });
 
@@ -55,8 +55,8 @@ app.get( '/notes/:socketId', function( req, res ) {
 app.listen( opts.port || null );
 
 var brown = '\033[33m',
-	green = '\033[32m',
-	reset = '\033[0m';
+    green = '\033[32m',
+    reset = '\033[0m';
 
 var slidesLocation = 'http://localhost' + ( opts.port ? ( ':' + opts.port ) : '' );
 

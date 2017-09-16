@@ -20,8 +20,8 @@
  * Solarized colors by Ethan Schoonover
  */
 html * {
-	color-profile: sRGB;
-	rendering-intent: auto;
+    color-profile: sRGB;
+    rendering-intent: auto;
 }
 
 // Solarized colors
@@ -53,7 +53,7 @@ $selectionBackgroundColor: $magenta;
 
 // Background generator
 // @mixin bodyBackground() {
-// 	@include radial-gradient( rgba($base3,1), rgba(lighten($base3, 20%),1) );
+//     @include radial-gradient( rgba($base3,1), rgba(lighten($base3, 20%),1) );
 // }
 
 
