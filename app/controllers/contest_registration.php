@@ -4,13 +4,13 @@
         become404Page();
     }
     genMoreContestInfo($contest);
-    
+
     if ($myUser == null) {
         redirectToLogin();
-    } elseif (hasContestPermission($myUser, $contest) || hasRegistered($myUser, $contest) || $contest['cur_progress'] != CONTEST_NOT_STARTED) {
+    } elseif (hasContestPermission($myUser, $contest) || hasRegistered($myUser, $contest) || $contest['cur_progress'] != CONTEST_IN_PROGRESS) {
         redirectTo('/contests');
     }
-    
+
     $register_form = new UOJForm('register');
     $register_form->handle = function() {
         global $myUser, $contest;
@@ -20,7 +20,7 @@
     $register_form->submit_button_config['class_str'] = 'btn btn-primary';
     $register_form->submit_button_config['text'] = '报名比赛';
     $register_form->succ_href = "/contests";
-    
+
     $register_form->runAtServer();
 ?>
 <?php echoUOJPageHeader(HTML::stripTags($contest['name']) . ' - 报名') ?>
