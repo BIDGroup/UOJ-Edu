@@ -7,7 +7,7 @@
 
     if ($myUser == null) {
         redirectToLogin();
-    } elseif (hasContestPermission($myUser, $contest) || hasRegistered($myUser, $contest) || $contest['cur_progress'] != CONTEST_NOT_STARTED || $contest['cur_progress'] != CONTEST_IN_PROGRESS) {
+    } elseif (hasContestPermission($myUser, $contest) || hasRegistered($myUser, $contest) || ((!hasRegistered($myUser, $contest))&&($contest['cur_progress'] == CONTEST_PENDING_FINAL_TEST||$contest['cur_progress']==CONTEST_TESTING||$contest['cur_progress']==CONTEST_FINISHED)) {
         redirectTo('/contests');
     }
 
