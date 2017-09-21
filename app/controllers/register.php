@@ -12,14 +12,14 @@
         if (!isset($_POST['email'])) {
             return "无效表单";
         }
-        if(!isset($_POST['verify-code'])){
+        if(!isset($_POST['verifyCode'])){
             return "无效表单";
         }
 
         $username = $_POST['username'];
         $password = $_POST['password'];
         $email = $_POST['email'];
-        $verifyCode = $_POST['verify-code'];
+        $verifyCode = $_POST['verifyCode'];
         if (!validateUsername($username)) {
             return "失败：无效用户名。";
         }
@@ -61,7 +61,7 @@
         }
         die();
     }elseif (isset($_POST['check_verify_code'])) {
-        $verifyCode = $_POST['verify-code'];
+        $verifyCode = $_POST['verifyCode'];
         if(validateVerifyCode($verifyCode)){
             echo '{"ok" : true}';
         } else {
@@ -189,7 +189,7 @@ function submitRegisterPost() {
         username : $('#input-username').val(),
         email        : $('#input-email').val(),
         password : md5($('#input-password').val(), "<?= getPasswordClientSalt() ?>"),
-        verify-code : $('#input-verify-code').val()
+        verifyCode : $('#input-verify-code').val()
     }, function(msg) {
         if (/^欢迎你！/.test(msg)) {
             BootstrapDialog.show({
