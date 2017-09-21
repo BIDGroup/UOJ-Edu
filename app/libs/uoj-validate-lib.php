@@ -12,6 +12,10 @@ function validateEmail($email) {
     return is_string($email) && strlen($email) <= 50 && preg_match('/^(.+)@(.+)$/', $email);
 }
 
+function validateVerifyCode($verifyCode){
+    return strcmp($verifyCode,UOJConfig::$data['security']['verify-code']);
+}
+
 function validateQQ($QQ) {
     return is_string($QQ) && strlen($QQ) <= 15 && preg_match('/^[0-9]{5,15}$/', $QQ);
 }

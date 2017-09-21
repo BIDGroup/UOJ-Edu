@@ -12,10 +12,14 @@
         if (!isset($_POST['email'])) {
             return "无效表单";
         }
+        if(!isset($_POST['verify-code'])){
+            return "无效表单";
+        }
 
         $username = $_POST['username'];
         $password = $_POST['password'];
         $email = $_POST['email'];
+        $verifyCode = $_POST['verify-code'];
         if (!validateUsername($username)) {
             return "失败：无效用户名。";
         }
@@ -28,20 +32,23 @@
         if (!validateEmail($email)) {
             return "失败：无效电子邮箱。";
         }
-        
+        if(!validateVerifyCode($verifyCode)) {
+            return "失败：验证码错误";
+        }
+
         $password = getPasswordToStore($password, $username);
-        
+
         $esc_email = DB::escape($email);
-        
+
         $svn_pw = uojRandString(10);
         if (!DB::selectCount("SELECT COUNT(*) FROM user_info"))
             mysql_query("insert into user_info (username, email, password, svn_password, register_time, usergroup) values ('$username', '$esc_email', '$password', '$svn_pw', now(), 'S')");
         else
             mysql_query("insert into user_info (username, email, password, svn_password, register_time) values ('$username', '$esc_email', '$password', '$svn_pw', now())");
-        
+
         return "欢迎你！" . $username . "，你已成功注册。";
     }
-    
+
     if (isset($_POST['register'])) {
         echo handleRegisterPost();
         die();
@@ -53,6 +60,13 @@
             echo '{"ok" : false}';
         }
         die();
+    }elseif (isset($_POST['check_verify_code'])) {
+        $verifyCode = $_POST['verify-code'];
+        if(validateVerifyCode($verifyCode)){
+            echo '{"ok" : true}';
+        } else {
+            echo '{"ok" : false}';
+        }
     }
 ?>
 <?php
@@ -84,6 +98,13 @@
             <span class="help-block" id="help-password"></span>
         </div>
     </div>
+    <div id="div-verify-code" class="form-group">
+        <label for="input-verify-code" class="col-sm-2 control-label"><?= UOJLocale::get('verify code') ?></label>
+        <div class="col-sm-3">
+            <input type="password" class="form-control" id="input-verify-code" name="verify-code" placeholder="<?= UOJLocale::get('enter verify code') ?>" maxLength="30" />
+            <span class="help-block" id="help-verify-code"></span>
+        </div>
+    </div>
     <div class="form-group">
         <div class="col-sm-offset-2 col-sm-3">
             <button type="submit" id="button-submit" class="btn btn-default"><?= UOJLocale::get('submit') ?></button>
@@ -99,7 +120,7 @@ function checkUsernameNotInUse() {
         type : 'POST',
         dataType : 'json',
         async : false,
-        
+
         data : {
             check_username : '',
             username : $('#input-username').val()
@@ -108,6 +129,29 @@ function checkUsernameNotInUse() {
             ok = data.ok;
         },
         error :    function(XMLHttpRequest, textStatus, errorThrown) {
+            alert(XMLHttpRequest.responseText);
+            ok = false;
+        }
+    });
+    return ok;
+}
+function checkVerifyCode() {
+    var ok = false;
+    $.ajax({
+        url : '/register',
+        type : 'POST',
+        dataType : 'json',
+        async : false,
+
+        data : {
+            check_verify_code : '',
+            verifyCode : $('#input-verify-code').val()
+        },
+
+        success : function(data) {
+            ok = data.ok;
+        },
+        error : function(XMLHttpRequest, textStatus, errorThrown) {
             alert(XMLHttpRequest.responseText);
             ok = false;
         }
@@ -126,6 +170,11 @@ function validateRegisterPost() {
         return '';
     })
     ok &= getFormErrorAndShowHelp('password', validateSettingPassword);
+    ok &= getFormErrorAndShowHelp('verify-code',function(str) {
+        if(!checkVerifyCode())
+            return '验证码错误';
+        return '';
+    })
     return ok;
 }
 
@@ -133,13 +182,14 @@ function submitRegisterPost() {
     if (!validateRegisterPost()) {
         return;
     }
-    
+
     $.post('/register', {
         _token : "<?= crsf_token() ?>",
         register : '',
         username : $('#input-username').val(),
         email        : $('#input-email').val(),
-        password : md5($('#input-password').val(), "<?= getPasswordClientSalt() ?>")
+        password : md5($('#input-password').val(), "<?= getPasswordClientSalt() ?>"),
+        verify-code : $('#input-verify-code').val()
     }, function(msg) {
         if (/^欢迎你！/.test(msg)) {
             BootstrapDialog.show({

@@ -28,6 +28,7 @@ return [
         ]
     ],
     'security' => [
+        'verify-code' => '1234',
         'user' => [
             'client_salt' => 'salt0'
         ],
