@@ -67,6 +67,7 @@
         } else {
             echo '{"ok" : false}';
         }
+        die();
     }
 ?>
 <?php
