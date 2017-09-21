@@ -13,7 +13,7 @@ function validateEmail($email) {
 }
 
 function validateVerifyCode($verifyCode){
-    return !strcmp($verifyCode,UOJConfig::$data['security']['verify-code']);
+    return strcmp($verifyCode,UOJConfig::$data['security']['verify-code']) == 0;
 }
 
 function validateQQ($QQ) {
