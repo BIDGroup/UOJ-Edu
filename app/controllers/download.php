@@ -30,6 +30,14 @@
             $file_name = "/home/local_main_judger/judge_client/uoj_judger/include/testlib.h";
             $download_name = "testlib.h";
             break;
+        case 'data':
+            if ($myUser == null || !isSuperUser($myUser)) {
+                become403Page();
+            }
+            $id = $_GET['id'];
+            $file_name = "/var/uoj_data/$id/download.zip";
+            $download_name = "problem_$id.zip";
+            break;
         default:
             become404Page();
     }
