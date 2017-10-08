@@ -4,6 +4,14 @@ uojLocaleData = {
         "en": "Username",
         "zh-cn": "用户名"
     },
+    "grade": {
+        "en": "Grade",
+        "zh-cn": "年级"
+    },
+    "name": {
+        "en": "Name",
+        "zh-cn": "姓名"
+    },
     "contests::total score": {
         "en": "Score",
         "zh-cn": "总分"
@@ -331,7 +339,7 @@ $.fn.click_zan_block = function() {
         } else {
             $(this).addClass('uoj-click-zan-block-negative');
         }
-        
+
         var node = this;
         var up_node = $('<a href="#" class="uoj-click-zan-up"><span class="glyphicon glyphicon-thumbs-up"></span>'+uojLocale('click-zan::good')+'</a>').click(function(e) {
             e.preventDefault();
@@ -341,7 +349,7 @@ $.fn.click_zan_block = function() {
             e.preventDefault();
             click_zan(id, type, -1, node);
         });
-        
+
         $(this)
             .append(up_node)
             .append(down_node)
@@ -357,7 +365,7 @@ function getCountdownStr(t) {
     var mm = toFilledStr(x % 60, '0', 2);
     x = Math.floor(x / 60);
     var hh = x.toString();
-    
+
     var res = '<span style="font-size:30px">';
     res += '<span style="color:' + getColOfScore(Math.min(t / 10800 * 100, 100)) + '">' + hh + '</span>';
     res += ':';
@@ -484,11 +492,11 @@ function checkContestNotice(id, lastTime) {
 $.fn.long_table = function(data, cur_page, header_row, get_row_str, config) {
     return this.each(function() {
         var table_div = this;
-        
+
         $(table_div).html('');
-        
+
         var page_len = config.page_len != undefined ? config.page_len : 10;
-        
+
         if (!config.echo_full) {
             var n_rows = data.length;
             var n_pages = Math.max(Math.ceil(n_rows / page_len), 1);
@@ -507,10 +515,10 @@ $.fn.long_table = function(data, cur_page, header_row, get_row_str, config) {
             cur_page = 1;
             var cur_start = (cur_page - 1) * page_len;
         }
-        
+
         var div_classes = config.div_classes != undefined ? config.div_classes : ['table-responsive'];
         var table_classes = config.table_classes != undefined ? config.table_classes : ['table', 'table-bordered', 'table-hover', 'table-striped', 'table-text-center'];
-        
+
         var now_cnt = 0;
         var tbody = $('<tbody />')
         for (var i = 0; i < page_len && cur_start + i < n_rows; i++) {
@@ -524,7 +532,7 @@ $.fn.long_table = function(data, cur_page, header_row, get_row_str, config) {
         if (now_cnt == 0) {
             tbody.append('<tr><td colspan="233">无</td></tr>');
         }
-        
+
         $(table_div).append(
             $('<div class="' + div_classes.join(' ') + '" />').append(
                 $('<table class="' + table_classes.join(' ') + '" />').append(
@@ -534,16 +542,16 @@ $.fn.long_table = function(data, cur_page, header_row, get_row_str, config) {
                 )
             )
         );
-        
+
         if (config.print_after_table != undefined) {
             $(table_div).append(config.print_after_table());
         }
-        
+
         var get_page_li = function(p, h) {
             if (p == -1) {
                 return $('<li></li>').addClass('disabled').append($('<a></a>').append(h));
             }
-            
+
             var li = $('<li></li>');
             if (p == cur_page) {
                 li.addClass('active');
@@ -558,7 +566,7 @@ $.fn.long_table = function(data, cur_page, header_row, get_row_str, config) {
             );
             return li;
         };
-        
+
         if (n_pages > 1) {
             var pagination = $('<ul class="pagination top-buffer-no bot-buffer-sm"></ul>');
             if (cur_page > 1) {
@@ -1034,7 +1042,7 @@ function showCommentReplies(id, replies) {
         if (text == undefined) {
             text = '';
         }
-        
+
         var p = '#comment-body-' + id;
         var q = '#div-form-reply';
         var r = '#input-reply_comment';
@@ -1062,11 +1070,11 @@ function showCommentReplies(id, replies) {
         e.preventDefault();
         toggleFormReply(id);
     });
-    
+
     if (replies.length == 0) {
         return;
     }
-    
+
     $("#replies-" + id).long_table(
         replies,
         1,
@@ -1105,6 +1113,8 @@ function showStandings() {
         1,
         '<tr>' +
             '<th style="width:5em">#</th>' +
+            '<th style="width:5em">'+uojLocale('grade')+'</th>' +
+            '<th style="width:5em">'+uojLocale('name')+'</th>' +
             '<th style="width:14em">'+uojLocale('username')+'</th>' +
             '<th style="width:5em">'+uojLocale('contests::total score')+'</th>' +
             $.map(problems, function(col, idx) {
@@ -1113,6 +1123,8 @@ function showStandings() {
         '</tr>',
         function(row) {
             var col_tr = '<tr>';
+            col_tr += '<td>' + row[4] + '</td>';
+            col_tr += '<td>' + row[5] + '</td>';
             col_tr += '<td>' + row[3] + '</td>';
             col_tr += '<td>' + getUserLink(row[2][0], row[2][1]) + '</td>';
             col_tr += '<td>' + '<div><span class="uoj-score" data-max="' + problems.length * 100 + '" style="color:' + getColOfScore(row[0] / problems.length) + '">' + row[0] + '</span></div>' + '<div>' + getPenaltyTimeStr(row[1]) + '</div></td>';
