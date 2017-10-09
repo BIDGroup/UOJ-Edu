@@ -12,6 +12,10 @@ uojLocaleData = {
         "en": "Name",
         "zh-cn": "姓名"
     },
+    "school": {
+        "en": "School",
+        "zh-cn": "学校"
+    },
     "contests::total score": {
         "en": "Score",
         "zh-cn": "总分"
@@ -1113,9 +1117,10 @@ function showStandings() {
         1,
         '<tr>' +
             '<th style="width:5em">#</th>' +
+            '<th style="width:7em">'+uojLocale('school')+'</th>' +
             '<th style="width:5em">'+uojLocale('grade')+'</th>' +
             '<th style="width:5em">'+uojLocale('name')+'</th>' +
-            '<th style="width:14em">'+uojLocale('username')+'</th>' +
+            '<th style="width:12em">'+uojLocale('username')+'</th>' +
             '<th style="width:5em">'+uojLocale('contests::total score')+'</th>' +
             $.map(problems, function(col, idx) {
                 return '<th style="width:8em;">' + '<a href="/contest/' + contest_id + '/problem/' + col + '">' + String.fromCharCode('A'.charCodeAt(0) + idx) + '</a>' + '</th>';
@@ -1124,8 +1129,9 @@ function showStandings() {
         function(row) {
             var col_tr = '<tr>';
             col_tr += '<td>' + row[3] + '</td>';
-            col_tr += '<td>' + (row[4] == undefined ? '' : row[4]) + '</td>';
-            col_tr += '<td>' + (row[5] == undefined ? '' : row[5]) + '</td>';
+            col_tr += '<td>' + (row[2][2] == undefined ? '' : row[2][2]) + '</td>';
+            col_tr += '<td>' + (row[2][3] == undefined ? '' : row[2][3]) + '</td>';
+            col_tr += '<td>' + (row[2][4] == undefined ? '' : row[2][4]) + '</td>';
             col_tr += '<td>' + getUserLink(row[2][0], row[2][1]) + '</td>';
             col_tr += '<td>' + '<div><span class="uoj-score" data-max="' + problems.length * 100 + '" style="color:' + getColOfScore(row[0] / problems.length) + '">' + row[0] + '</span></div>' + '<div>' + getPenaltyTimeStr(row[1]) + '</div></td>';
             for (var i = 0; i < problems.length; i++) {

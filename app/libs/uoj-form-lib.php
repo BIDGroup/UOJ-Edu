@@ -12,16 +12,16 @@
         private $data = array();
         private $vdata = array();
         private $main_html = '';
-        
+
         public $handle;
-        
+
         public $submit_button_config = array();
-        
+
         public function __construct($form_name) {
             $this->form_name = $form_name;
             $this->succ_href = $_SERVER['REQUEST_URI'];
             $this->handle = function(&$vdata){};
-            
+
             $this->run_at_server_handler["check-{$this->form_name}"] = function() {
                 die(json_encode($this->validateAtServer()));
             };
@@ -46,7 +46,7 @@
                 }
                 $fun = $this->handle;
                 $fun($this->vdata);
-                
+
                 if ($this->succ_href !== 'none') {
                     header("Location: {$this->succ_href}");
                 }
@@ -58,7 +58,7 @@
             $GLOBALS['REQUIRE_LIB']['jquery.form'] = '';
             $this->ajax_submit_js = $js;
         }
-        
+
         public function add($name, $html, $validator_php, $validator_js) {
             $this->main_html .= $html;
             $this->data[] = array(
@@ -69,7 +69,7 @@
         public function appendHTML($html) {
             $this->main_html .= $html;
         }
-        
+
         public function addNoVal($name, $html) {
             $this->main_html .= $html;
             $this->data[] = array(
@@ -77,7 +77,7 @@
                 'validator_js' => 'always_ok',
                 'no_val' => '');
         }
-        
+
         public function addHidden($name, $default_value, $validator_php, $validator_js) {
             $default_value = htmlspecialchars($default_value);
             $html = <<<EOD
@@ -85,11 +85,24 @@
 EOD;
             $this->add($name, $html, $validator_php, $validator_js);
         }
-        
+
         public function addInput($name, $type, $label_text, $default_value, $validator_php, $validator_js) {
             $default_value = htmlspecialchars($default_value);
             $html = <<<EOD
 <div id="div-$name" class="form-group">
+    <label for="input-$name" class="col-sm-2 control-label">$label_text</label>
+    <div class="col-sm-3">
+        <input type="$type" class="form-control" name="$name" id="input-$name" value="$default_value" />
+        <span class="help-block" id="help-$name"></span>
+    </div>
+</div>
+EOD;
+            $this->add($name, $html, $validator_php, $validator_js);
+        }
+        public function addDefaultHiddenInput($name, $type, $label_text, $default_value, $validator_php, $validator_js) {
+            $default_value = htmlspecialchars($default_value);
+            $html = <<<EOD
+<div id="div-$name" class="form-group" style="display:none">
     <label for="input-$name" class="col-sm-2 control-label">$label_text</label>
     <div class="col-sm-3">
         <input type="$type" class="form-control" name="$name" id="input-$name" value="$default_value" />
@@ -105,7 +118,7 @@ EOD;
 <div id="div-$name" class="form-group">
     <label for="input-$name" class="col-sm-2 control-label">$label_text</label>
     <div class="col-sm-3">
-        <select class="form-control" id="input-content" name="$name">
+        <select class="form-control" id="input-content-$name" name="$name">
 
 EOD;
             foreach ($options as $opt_name => $opt_label) {
@@ -133,7 +146,7 @@ EOD;
                 'always_ok'
             );
         }
-        
+
         public function addVInput($name, $type, $label_text, $default_value, $validator_php, $validator_js) {
             $html = HTML::div_vinput($name, $type, $label_text, $default_value);
             $this->add($name, $html, $validator_php, $validator_js);
@@ -170,7 +183,7 @@ EOD;
                 'always_ok'
             );
         }
-        
+
         public function addTextArea($name, $label_text, $default_value, $validator_php, $validator_js) {
             $default_value = htmlspecialchars($default_value);
             $this->is_big = true;
@@ -211,9 +224,9 @@ EOD;
             $default_value = htmlspecialchars($default_value);
             global $REQUIRE_LIB;
             $REQUIRE_LIB['ckeditor'] = '';
-            
+
             $this->is_big = true;
-            
+
             $html = <<<EOD
 <div id="div-$name">
     <label for="input-$name" class="control-label">$label_text</label>
@@ -223,36 +236,36 @@ EOD;
 EOD;
             $this->add($name, $html, $validator_php, $validator_js);
         }
-        
+
         public function addBlogEditor(UOJBlogEditor $editor) {
             global $REQUIRE_LIB;
             $REQUIRE_LIB['blog-editor'] = '';
-            
+
             $this->is_big = true;
-            
+
             $name = $editor->name;
-            
+
             $this->addVInput("{$name}_title", 'text', '标题', $editor->cur_data['title'],
                 function ($title) use($editor) {
                     return $editor->validateTitle();
                 },
                 null
             );
-            
+
             $content_md_html = HTML::div_vtextarea("{$name}_content_md", '内容', $editor->cur_data['content_md']);
-            
+
             $this->add("{$name}_content_md", $content_md_html,
                 function ($content_md) use($editor) {
                     return $editor->validateContentMd();
                 },
                 'always_ok'
             );
-        
+
             $this->appendHTML(<<<EOD
 <script type="text/javascript">blog_editor_init("$name");</script>
 EOD
             );
-            
+
             $this->run_at_server_handler["save-{$name}"] = function() use($name, $editor) {
                 if ($this->no_submit) {
                     become404Page();
@@ -274,9 +287,9 @@ EOD
             $default_value = htmlspecialchars($default_value);
             global $REQUIRE_LIB;
             $REQUIRE_LIB['slide-editor'] = '';
-            
+
             $this->is_big = true;
-            
+
             $html = <<<EOD
 <div id="div-$name">
     <label for="input-$name" class="control-label">$label_text</label>
@@ -297,7 +310,7 @@ EOD;
                 return null;
             }
         }
-        
+
         public function addSourceCodeInput($name, $text, $languages) {
             $this->add("{$name}_upload_type", '',
                 function($type, &$vdata) use($name) {
@@ -328,7 +341,7 @@ EOD;
             if ($preferred_language == null || !in_array($preferred_language, $languages)) {
                 $preferred_language = $languages[0];
             }
-            
+
             $langs_options_str = '';
             foreach ($languages as $lang) {
                 $langs_options_str .= "<option";
@@ -345,7 +358,7 @@ $('#form-group-$name').source_code_form_group('$name', '$text', $langs_options_j
 </script>
 EOD
             );
-            
+
             $this->is_big = true;
             $this->has_file = true;
         }
@@ -373,17 +386,17 @@ $('#form-group-$name').text_file_form_group('$name', '$text');
 </script>
 EOD
         );
-            
+
             $this->is_big = true;
             $this->has_file = true;
         }
-        
+
         public function printHTML() {
             $form_entype_str = $this->is_big ? ' enctype="multipart/form-data"' : '';
             echo '<form action="', $_SERVER['REQUEST_URI'], '" method="post" class="form-horizontal" id="form-', $this->form_name, '"', $form_entype_str, '>';
             echo HTML::hiddenToken();
             echo $this->main_html;
-            
+
             if (!$this->no_submit) {
                 if (!isset($this->submit_button_config['align'])) {
                     $this->submit_button_config['align'] = 'center';
@@ -406,13 +419,13 @@ EOD
                 }
                 echo '</div>';
             }
-            
+
             echo '</form>';
-            
+
             if ($this->no_submit) {
                 return;
             }
-            
+
             echo <<<EOD
 <script type="text/javascript">
 $(document).ready(function() {
@@ -449,7 +462,7 @@ EOD;
                     $need_ajax = true;
                 }
             }
-            
+
             if ($need_ajax) {
                 echo <<<EOD
         var post_data = {};
@@ -499,7 +512,7 @@ EOD;
 
 EOD;
             }
-        
+
             foreach ($this->data as $field) {
                 if ($field['validator_js'] != 'always_ok') {
                     echo <<<EOD
@@ -515,7 +528,7 @@ EOD;
 EOD;
                 }
             }
-            
+
             if (isset($this->submit_button_config['smart_confirm'])) {
                 $this->submit_button_config['confirm_text'] = '你真的要' . $this->submit_button_config['text'] . '吗？';
             }
@@ -570,7 +583,7 @@ EOD;
 </script>
 EOD;
         }
-        
+
         private function validateAtServer() {
             $errors = array();
             if ($this->extra_validator) {
@@ -591,7 +604,7 @@ EOD;
             }
             return $errors;
         }
-        
+
         public function runAtServer() {
             foreach ($this->run_at_server_handler as $type => $handler) {
                 if (isset($_POST[$type])) {
@@ -600,7 +613,7 @@ EOD;
             }
         }
     }
-    
+
     function newAddDelCmdForm($form_name, $validate, $handle, $final = null) {
         $form = new UOJForm($form_name);
         $form->addTextArea(
@@ -616,7 +629,7 @@ EOD;
                         return '第' . ($line_id + 1) . '行：格式错误';
                     }
                     $obj = trim(substr($line, 1));
-                    
+
                     if ($err = $validate($obj)) {
                         return '第' . ($line_id + 1) . '行：' . $err;
                     }
@@ -643,7 +656,7 @@ EOD;
         }
         return $form;
     }
-    
+
     function newSubmissionForm($form_name, $requirement, $zip_file_name_gen, $handle) {
         $form = new UOJForm($form_name);
         foreach ($requirement as $req) {
@@ -654,22 +667,22 @@ EOD;
                     $form->addTextFileInput("{$form_name}_{$req['name']}", UOJLocale::get('problems::text file').':'.$req['file_name']);
             }
         }
-        
+
         $form->handle = function(&$vdata) use($form_name, $requirement, $zip_file_name_gen, $handle) {
             global $myUser;
-            
+
             if ($myUser == null) {
                 redirectToLogin();
             }
-            
+
             $tot_size = 0;
             $zip_file_name = $zip_file_name_gen();
-            
+
             $zip_file = new ZipArchive();
             if ($zip_file->open(UOJContext::storagePath().$zip_file_name, ZipArchive::CREATE) !== true) {
                 becomeMsgPage('提交失败');
             }
-            
+
             $content = array();
             $content['file_name'] = $zip_file_name;
             $content['config'] = array();
@@ -678,7 +691,7 @@ EOD;
                     $content['config'][] = array("{$req['name']}_language", $_POST["{$form_name}_{$req['name']}_language"]);
                 }
             }
-            
+
             foreach ($requirement as $req) {
                 if ($_POST["{$form_name}_{$req['name']}_upload_type"] == 'editor') {
                     $zip_file->addFromString($req['file_name'], $_POST["{$form_name}_{$req['name']}_editor"]);
@@ -691,7 +704,7 @@ EOD;
                     }
                 }
                 $stat = $zip_file->statName($req['file_name']);
-                
+
                 if ($req['type'] == 'source code') {
                     $max_size = isset($req['size']) ? (int)$req['size'] : 50;
                     if ($stat['size'] > $max_size * 1024) {
@@ -700,12 +713,12 @@ EOD;
                         becomeMsgPage("源代码长度不能超过 {$max_size}KB。");
                     }
                 }
-                
+
                 $tot_size += $stat['size'];
             }
-            
+
             $zip_file->close();
-            
+
             $handle($zip_file_name, $content, $tot_size);
         };
         return $form;
@@ -728,29 +741,29 @@ EOD;
     <span class="help-block" id="help-{$name}"></span>
 </div>
 EOD;
-        
-        $form->addNoVal($name, $html);    
+
+        $form->addNoVal($name, $html);
         $form->is_big = true;
         $form->has_file = true;
-        
+
         $form->handle = function() use($name, $requirement, $zip_file_name_gen, $handle) {
             global $myUser;
-            
+
             if ($myUser == null) {
                 redirectToLogin();
             }
-            
+
             if (!isset($_FILES[$name])) {
                 becomeMsgPage('你在干啥……怎么什么都没交过来……？');
             } elseif (!is_uploaded_file($_FILES[$name]['tmp_name'])) {
                 becomeMsgPage('上传出错，貌似你什么都没交过来……？');
             }
-            
+
             $up_zip_file = new ZipArchive();
             if ($up_zip_file->open($_FILES[$name]['tmp_name']) !== true) {
                 becomeMsgPage('不是合法的zip压缩文件');
             }
-            
+
             $tot_size = 0;
             $zip_content = array();
             foreach ($requirement as $req) {
@@ -771,23 +784,23 @@ EOD;
                 }
             }
             $up_zip_file->close();
-            
+
             $zip_file_name = $zip_file_name_gen();
-            
+
             $zip_file = new ZipArchive();
             if ($zip_file->open(UOJContext::storagePath().$zip_file_name, ZipArchive::CREATE) !== true) {
                 becomeMsgPage('提交失败');
             }
-            
+
             foreach ($requirement as $req) {
                  $zip_file->addFromString($req['file_name'], $zip_content[$req['name']]);
             }
             $zip_file->close();
-            
+
             $content = array();
             $content['file_name'] = $zip_file_name;
             $content['config'] = array();
-            
+
             $handle($zip_file_name, $content, $tot_size);
         };
         return $form;

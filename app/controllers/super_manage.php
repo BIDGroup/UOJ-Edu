@@ -1,11 +1,11 @@
 <?php
     requirePHPLib('form');
     requirePHPLib('judger');
-    
+
     if ($myUser == null || !isSuperUser($myUser)) {
         become403Page();
     }
-    
+
     $user_form = new UOJForm('user');
     $user_form->addInput('username', 'text', '用户名', '',
         function ($username) {
@@ -19,16 +19,35 @@
         },
         null
     );
+    $user_form->addDefaultHiddenInput('school', 'text', '学校', '',
+        function ($school) {
+            return '';
+        }
+    , null);
+    $user_form->addDefaultHiddenInput('grade', 'text', '年级', '',
+        function ($grade) {
+            return '';
+        }
+    , null);
+    $user_form->addDefaultHiddenInput('realName', 'text', '姓名', '',
+        function ($realName) {
+            return '';
+        }
+    , null);
     $options = array(
         'banneduser' => '设为封禁用户',
         'normaluser' => '设为普通用户',
-        'superuser' => '设为超级用户'
+        'superuser' => '设为超级用户',
+        'setUserInfo' => '设置用户信息'
     );
     $user_form->addSelect('op-type', $options, '操作类型', '');
     $user_form->handle = function() {
         global $user_form;
-        
+
         $username = $_POST['username'];
+        $school = $_POST['school'];
+        $grade = $_POST['grade'];
+        $realName = $_POST['realName'];
         switch ($_POST['op-type']) {
             case 'banneduser':
                 DB::update("update user_info set usergroup = 'B' where username = '{$username}'");
@@ -39,10 +58,13 @@
             case 'superuser':
                 DB::update("update user_info set usergroup = 'S' where username = '{$username}'");
                 break;
+            case 'setUserInfo':
+                DB::update("update user_info set school = '{$school}',grade = '{$grade}',real_name = '{$realName}' where username = '{$username}'");
+                break;
         }
     };
     $user_form->runAtServer();
-    
+
     $blog_link_contests = new UOJForm('blog_link_contests');
     $blog_link_contests->addInput('blog_id', 'text', '博客ID', '',
         function ($x) {
@@ -79,7 +101,7 @@
         $config = $all_config['links'];
 
         $n = count($config);
-        
+
         if ($_POST['op-type'] == 'add') {
             $row = array();
             $row[0] = $_POST['title'];
@@ -101,7 +123,7 @@
         mysql_query("update contests set extra_config='${str}' where id='${contest_id}'");
     };
     $blog_link_contests->runAtServer();
-    
+
     $blog_link_index = new UOJForm('blog_link_index');
     $blog_link_index->addInput('blog_id2', 'text', '博客ID', '',
         function ($x) {
@@ -139,7 +161,7 @@
         }
     };
     $blog_link_index->runAtServer();
-    
+
     $blog_deleter = new UOJForm('blog_deleter');
     $blog_deleter->addInput('blog_del_id', 'text', '博客ID', '',
         function ($x) {
@@ -174,7 +196,7 @@
     $contest_submissions_deleter->handle = function() {
         $contest = queryContest($_POST['contest_id']);
         genMoreContestInfo($contest);
-        
+
         $contest_problems = DB::selectAll("select problem_id from contests_problems where contest_id = {$contest['id']}");
         foreach ($contest_problems as $problem) {
             $submissions = DB::selectAll("select * from submissions where problem_id = {$problem['problem_id']} and submit_time < '{$contest['start_time_str']}'");
@@ -208,7 +230,7 @@
         DB::delete("delete from custom_test_submissions order by id asc limit {$vdata['last']}");
     };
     $custom_test_deleter->runAtServer();
-    
+
     $banlist_cols = array('username', 'usergroup');
     $banlist_config = array();
     $banlist_header_row = <<<EOD
@@ -224,9 +246,9 @@ EOD;
             </tr>
 EOD;
     };
-    
+
     $cur_tab = isset($_GET['tab']) ? $_GET['tab'] : 'users';
-    
+
     $tabs_info = array(
         'users' => array(
             'name' => '用户操作',
@@ -253,7 +275,7 @@ EOD;
             'url' => '/super-manage/search'
         )
     );
-    
+
     if (!isset($tabs_info[$cur_tab])) {
         become404Page();
     }
@@ -267,10 +289,34 @@ EOD;
     <div class="col-sm-3">
         <?= HTML::tablist($tabs_info, $cur_tab, 'nav-pills nav-stacked') ?>
     </div>
-    
+
     <div class="col-sm-9">
         <?php if ($cur_tab === 'users'): ?>
             <?php $user_form->printHTML(); ?>
+            <script type="text/javascript">
+                $(document).ready(
+                    function() {
+                        $("#input-content-op-type").change(
+                            function() {
+                                var val = $("#input-content-op-type").get(0).selectedIndex;
+                                if(val == 3){
+                                    if($("#div-school").is(":hidden") && $("#div-grade").is(":hidden") && $("#div-realName").is(":hidden")){
+                                        $("#div-school").show(400);
+                                        $("#div-grade").show(400);
+                                        $("#div-realName").show(400);
+                                    }
+                                }else{
+                                    if(!($("#div-school").is(":hidden")) && !($("#div-grade").is(":hidden")) && !($("#div-realName").is(":hidden"))) {
+                                        $("#div-school").hide(400);
+                                        $("#div-grade").hide(400);
+                                        $("#div-realName").hide(400);
+                                    }
+                                }
+                            }
+                        );
+                    }
+                );
+            </script>
             <h3>封禁名单</h3>
             <?php echoLongTable($banlist_cols, 'user_info', "usergroup='B'", '', $banlist_header_row, $banlist_print_row, $banlist_config) ?>
         <?php elseif ($cur_tab === 'blogs'): ?>
@@ -283,7 +329,7 @@ EOD;
                 <h4>添加到公告</h4>
                 <?php $blog_link_index->printHTML(); ?>
             </div>
-        
+
             <div>
                 <h4>删除博客</h4>
                 <?php $blog_deleter->printHTML(); ?>
@@ -343,7 +389,7 @@ EOD;
                 resize: true
             });
         </script>
-        
+
         <h2 class="text-center">一月搜索情况</h2>
         <div id="search-distribution-chart-month" style="height: 250px;"></div>
         <script type="text/javascript">
@@ -356,7 +402,7 @@ EOD;
                 resize: true
             });
         </script>
-        
+
         <?php echoLongTable(array('*'), 'search_requests', "1", 'order by id desc',
             '<tr><th>id</th><th>created_at</th><th>remote_addr</th><th>type</th><th>q</th><tr>',
             function($row) {

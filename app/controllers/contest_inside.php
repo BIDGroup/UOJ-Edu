@@ -59,7 +59,7 @@
         }
 
         $people = array();
-        $result = mysql_query("select username, user_rating from contests_registrants where contest_id = {$contest['id']} and has_participated = 1");
+        $result = mysql_query("select contests_registrants.username, contests_registrants.user_rating, user_info.school,user_info.grade,user_info.real_name from contests_registrants inner join user_info where contest_id = {$contest['id']} and has_participated = 1 and contests_registrants.username = user_info.username");
         while ($row = mysql_fetch_array($result, MYSQL_NUM)) {
             $row[1] = (int)$row[1];
             $people[] = $row;
