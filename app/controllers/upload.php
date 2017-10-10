@@ -21,7 +21,7 @@
     }
 
     $upload_picture = $_FILES['upload_picture'];
-    if($upload_picture['error'] == UPLOAD_ERR_OK){
+    if($upload_picture['error'] == UPLOAD_ERR_OK && $upload_picture['size'] <= 33554432){
         $target_folder = "/var/www/uoj/files/upload/";
         $temp_name = $upload_picture['tmp_name'];
         $file_name = guid().$upload_picture['name'];

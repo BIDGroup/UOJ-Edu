@@ -262,6 +262,10 @@ function blog_editor_init(name, editor_config) {
                id: 'btn-1',
                label: '上传图片',
                action: function(dialog) {
+                   var my_button = this;
+                   my_button.disable();
+                   my_button.spin();
+                   dialog.setClosable(false);
                    var upload_form = new FormData($("#upload-form")[0]);
                    $.ajax({
                        url: "/upload",
