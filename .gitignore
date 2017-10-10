@@ -1,4 +1,3 @@
 /app/.config.php
 /app/storage/*
-.travis.yml
 .htaccess

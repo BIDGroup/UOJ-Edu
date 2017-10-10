@@ -2,33 +2,35 @@ function blog_editor_init(name, editor_config) {
     if (editor_config === undefined) {
         editor_config = {};
     }
-    
+
     editor_config = $.extend({
         type: 'blog'
     }, editor_config);
-    
+
     var input_title = $("#input-" + name + "_title");
     var input_tags = $("#input-" + name + "_tags");
     var input_content_md = $("#input-" + name + "_content_md");
     var input_is_hidden = $("#input-" + name + "_is_hidden");
     var this_form = input_content_md[0].form;
-    
+
     var is_saved;
     var last_save_done = true;
-    
+
     // init buttons
     var save_btn = $('<button type="button" class="btn btn-sm"></button>');
     var preview_btn = $('<button type="button" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-eye-open"></span></button>');
     var bold_btn = $('<button type="button" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-bold"></span></button>');
     var italic_btn = $('<button type="button" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-italic"></span></button>');
-    
+    var upload_picture_btn = $('<button type="button" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-picture"></span></button>');
+
     save_btn.tooltip({ container: 'body', title: '保存 (Ctrl-S)' });
-    preview_btn.tooltip({ container: 'body', title: '预览 (Ctrl-D)'     });
+    preview_btn.tooltip({ container: 'body', title: '预览 (Ctrl-D)'});
     bold_btn.tooltip({ container: 'body', title: '粗体 (Ctrl-B)' });
     italic_btn.tooltip({ container: 'body', title: '斜体 (Ctrl-I)' });
-    
-    var all_btn = [save_btn, preview_btn, bold_btn, italic_btn];
-    
+    upload_picture_btn.tooltip({ container : 'body', title: '上传图片'});
+
+    var all_btn = [save_btn, preview_btn, bold_btn, italic_btn,upload_picture_btn];
+
     // init toolbar
     var toolbar = $('<div class="btn-toolbar"></div>');
     toolbar.append($('<div class="btn-group"></div>')
@@ -39,7 +41,10 @@ function blog_editor_init(name, editor_config) {
         .append(bold_btn)
         .append(italic_btn)
     );
-    
+    toolbar.append($('<div class="btn-group"></div>')
+        .append(upload_picture_btn)
+    );
+
     function set_saved(val) {
         is_saved = val;
         if (val) {
@@ -74,9 +79,9 @@ function blog_editor_init(name, editor_config) {
             preview_btn.addClass('active');
         }
     }
-    
+
     set_saved(true);
-    
+
     // init codemirror
     input_content_md.wrap('<div class="blog-content-md-editor"></div>');
     var blog_contend_md_editor = input_content_md.parent();
@@ -84,7 +89,7 @@ function blog_editor_init(name, editor_config) {
         .append(toolbar)
     );
     input_content_md.wrap('<div class="blog-content-md-editor-in"></div>');
-    
+
     var codeeditor;
     if (editor_config.type == 'blog') {
         codeeditor = CodeMirror.fromTextArea(input_content_md[0], {
@@ -105,7 +110,7 @@ function blog_editor_init(name, editor_config) {
             theme: 'default'
         });
     }
-    
+
     function preview(html) {
         var iframe = $('<iframe frameborder="0"></iframe>');
         blog_contend_md_editor.append(
@@ -120,11 +125,11 @@ function blog_editor_init(name, editor_config) {
             preview_btn.click();
             return false;
         });
-        
+
         blog_contend_md_editor.find('.blog-content-md-editor-in').slideUp('fast');
         blog_contend_md_editor.find('.blog-content-md-editor-preview').slideDown('fast', function() {
             set_preview_status(2);
-            iframe.focus(); 
+            iframe.focus();
             iframe.find('body').focus();
         });
     }
@@ -139,18 +144,18 @@ function blog_editor_init(name, editor_config) {
             done: function() {
             }
         }, config);
-        
+
         if (!last_save_done) {
             config.fail();
             config.done();
             return;
         }
         last_save_done = false;
-        
+
         if (config.need_preview) {
             set_preview_status(1);
         }
-        
+
         var post_data = {};
         post_data["save-" + name] = '';
         $($(this_form).serializeArray()).each(function() {
@@ -159,7 +164,7 @@ function blog_editor_init(name, editor_config) {
         if (config.need_preview) {
             post_data['need_preview'] = 'on';
         }
-        
+
         $.ajax({
             type : 'POST',
             data : post_data,
@@ -190,13 +195,13 @@ function blog_editor_init(name, editor_config) {
                     config.fail();
                     return;
                 }
-                
+
                 set_saved(true);
-                
+
                 if (config.need_preview) {
                     preview(data.html);
                 }
-                
+
                 if (data.blog_write_url) {
                     window.history.replaceState({}, document.title, data.blog_write_url);
                 }
@@ -217,7 +222,7 @@ function blog_editor_init(name, editor_config) {
     function add_around(sl, sr) {
         codeeditor.replaceSelection(sl + codeeditor.getSelection() + sr);
     }
-    
+
     // event
     codeeditor.on('change', function() {
         codeeditor.save();
@@ -249,6 +254,56 @@ function blog_editor_init(name, editor_config) {
         add_around("*", "*");
         codeeditor.focus();
     });
+    upload_picture_btn.click(function() {
+        BootstrapDialog.show({
+           title: '上传图片',
+           message: '<form id = "upload-form" enctype="multipart/form-data"><input type="file" name="upload_picture" id="upload_picture"></form>',
+           buttons: [{
+               id: 'btn-1',
+               label: '上传图片',
+               action: function(dialog) {
+                   var upload_form = new FormData($("#upload-form")[0]);
+                   $.ajax({
+                       url: "/upload",
+                       type: "post",
+                       data: upload_form,
+                       processData:false,
+                       contentType:false,
+                       success:function(data){
+                            dialog.close();
+                            if(/^Error/.test(data)) {
+                                BootstrapDialog.show({
+                                    title: '上传图片',
+                                    message: '上传失败！',
+                                    type: BootstrapDialog.TYPE_DANGER,
+                                    buttons: [{
+                                        label: '好的',
+                                        action: function(dialog) {
+                                            dialog.close();
+                                        }
+                                    }]
+                                });
+                            }else{
+                                BootstrapDialog.show({
+                                    title: '上传图片',
+                                    message: '上传成功！文件名为' + data,
+                                    type: BootstrapDialog.TYPE_SUCCESS,
+                                    buttons: [{
+                                        label: '好的',
+                                        action: function(dialog) {
+                                            dialog.close();
+                                        }
+                                    }]
+                                });
+                                add_around("![","](/files/upload/" + data + ")");
+                                codeeditor.focus();
+                            }
+                        }
+                   });
+               }
+           }]
+       });
+    });
     input_is_hidden.on('switchChange.bootstrapSwitch', function(e, state) {
         var ok = true;
         if (!state && !confirm("你确定要公开吗？")) {
@@ -263,7 +318,7 @@ function blog_editor_init(name, editor_config) {
                 fail: function() {
                     succ = false;
                 },
-                done: function() {                    
+                done: function() {
                     input_is_hidden.bootstrapSwitch('readonly', false);
                     if (!succ) {
                         input_is_hidden.bootstrapSwitch('toggleState', true);
@@ -272,7 +327,7 @@ function blog_editor_init(name, editor_config) {
             });
         }
     });
-    
+
     // init hot keys
     codeeditor.setOption("extraKeys", {
         "Ctrl-S": function(cm) {
@@ -296,7 +351,7 @@ function blog_editor_init(name, editor_config) {
         save_btn.click();
         return false;
     });
-    
+
     if (this_form) {
         $(this_form).submit(function() {
             before_window_unload_message = null;
