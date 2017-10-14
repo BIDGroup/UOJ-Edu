@@ -83,11 +83,7 @@
             if (!$show_ip) {
                 echo '<tr>';
             } else {
-                if ($ip_owner[$user['remote_addr']] != $user['username']) {
-                    echo '<tr class="danger">';
-                } else {
-                    echo '<tr>';
-                }
+                echo '<tr>';
             }
             echo '<td>'.$num.'</td>';
             echo '<td>'.$user_link.'</td>';
